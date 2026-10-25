@@ -18,25 +18,9 @@ function App() {
     return <LoginPage onLogin={() => setIsAuthenticated(true)} />
   }
 
-  return (
-    <>
-      <nav className="app-nav">
-        <button
-          className={currentPage === 'recordings' ? 'active' : ''}
-          onClick={() => setCurrentPage('recordings')}
-        >
-          📼 Kayıtlar
-        </button>
-        <button
-          className={currentPage === 'live' ? 'active' : ''}
-          onClick={() => setCurrentPage('live')}
-        >
-          📹 Canlı Görüntü
-        </button>
-      </nav>
-      {currentPage === 'recordings' ? <ViewerPage /> : <LiveViewPage />}
-    </>
-  )
+  return currentPage === 'recordings' 
+    ? <ViewerPage currentPage={currentPage} onPageChange={setCurrentPage} /> 
+    : <LiveViewPage currentPage={currentPage} onPageChange={setCurrentPage} />
 }
 
 export default App

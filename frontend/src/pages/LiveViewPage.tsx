@@ -1,11 +1,16 @@
 import { useEffect, useState, useRef } from 'react'
-import { getCameras } from '../api/client'
+import { getCameras, getLiveStreamUrl } from '../api/client'
 import type { Camera } from '../types'
 import Hls from 'hls.js'
 import Header from '../components/Header'
 import CameraInfo from '../components/CameraInfo'
 
-export default function LiveViewPage() {
+interface LiveViewPageProps {
+  currentPage: 'recordings' | 'live'
+  onPageChange: (page: 'recordings' | 'live') => void
+}
+
+export default function LiveViewPage({ currentPage, onPageChange }: LiveViewPageProps) {
   const [cameras, setCameras] = useState<Camera[]>([])
   const [selectedCameraSlug, setSelectedCameraSlug] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -28,20 +33,19 @@ export default function LiveViewPage() {
     if (!selectedCameraSlug || !videoRef.current) return
 
     const video = videoRef.current
-    import('../api/client').then(({ getLiveStreamUrl }) => {
-      const streamUrl = getLiveStreamUrl(selectedCameraSlug)
-      setStreamError(null)
+    const streamUrl = getLiveStreamUrl(selectedCameraSlug)
+    setStreamError(null)
 
-      if (Hls.isSupported()) {
-        const hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 10,
-        })
-        
-        hlsRef.current = hls
-        hls.loadSource(streamUrl)
-        hls.attachMedia(video)
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 10,
+      })
+      
+      hlsRef.current = hls
+      hls.loadSource(streamUrl)
+      hls.attachMedia(video)
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch((e) => console.warn('Autoplay blocked:', e))
@@ -86,14 +90,13 @@ export default function LiveViewPage() {
         videoRef.current.src = ''
       }
     }
-    })
   }, [selectedCameraSlug])
 
   const selectedCamera = cameras.find((c) => c.slug === selectedCameraSlug) ?? null
 
   return (
     <main className="app-shell">
-      <Header />
+      <Header currentPage={currentPage} onPageChange={onPageChange} />
 
       {error && (
         <div className="notice error-notice" role="alert">

@@ -2,19 +2,24 @@ import { useEffect, useState } from 'react'
 import { getDiskUsage } from '../api/client'
 import type { DiskUsage } from '../types'
 
-export default function Header() {
+interface HeaderProps {
+  currentPage: 'recordings' | 'live'
+  onPageChange: (page: 'recordings' | 'live') => void
+}
+
+export default function Header({ currentPage, onPageChange }: HeaderProps) {
   const [diskUsage, setDiskUsage] = useState<DiskUsage | null>(null)
 
   useEffect(() => {
     getDiskUsage()
       .then(setDiskUsage)
-      .catch(() => console.error('Disk kullanımı yüklenemedi'))
+      .catch(() => {}) // Sessizce başarısız ol
     
     // Her 30 saniyede bir güncelle
     const interval = setInterval(() => {
       getDiskUsage()
         .then(setDiskUsage)
-        .catch(() => console.error('Disk kullanımı yüklenemedi'))
+        .catch(() => {}) // Sessizce başarısız ol
     }, 30000)
     
     return () => clearInterval(interval)
@@ -37,6 +42,21 @@ export default function Header() {
           <h1>Güvenlik Kayıt Merkezi</h1>
         </div>
       </div>
+
+      <nav className="header-nav">
+        <button
+          className={currentPage === 'recordings' ? 'active' : ''}
+          onClick={() => onPageChange('recordings')}
+        >
+          📼 Kayıtlar
+        </button>
+        <button
+          className={currentPage === 'live' ? 'active' : ''}
+          onClick={() => onPageChange('live')}
+        >
+          📹 Canlı Görüntü
+        </button>
+      </nav>
       
       <div className="header-right">
         {diskUsage && (

@@ -54,3 +54,8 @@ def verify_token(
 def verify_video_token(token: str = Query(..., description="JWT for HTML5 video playback")) -> None:
     """Validate a token passed in the video URL to preserve native Range requests."""
     _decode_token(token)
+
+
+def verify_token_string(token: str) -> None:
+    """Verify a token string directly without FastAPI dependency."""
+    _decode_token(token)

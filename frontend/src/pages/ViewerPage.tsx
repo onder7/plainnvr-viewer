@@ -10,7 +10,12 @@ import RecordingList from '../components/RecordingList'
 import VideoPlayer from '../components/VideoPlayer'
 import CameraInfo from '../components/CameraInfo'
 
-export default function ViewerPage() {
+interface ViewerPageProps {
+  currentPage: 'recordings' | 'live'
+  onPageChange: (page: 'recordings' | 'live') => void
+}
+
+export default function ViewerPage({ currentPage, onPageChange }: ViewerPageProps) {
   const [cameras, setCameras] = useState<Camera[]>([])
   const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date())
@@ -52,7 +57,7 @@ export default function ViewerPage() {
 
   return (
     <main className="app-shell">
-      <Header />
+      <Header currentPage={currentPage} onPageChange={onPageChange} />
 
       {error && <div className="notice error-notice" role="alert">{error}<button onClick={() => setError(null)} aria-label="Bildirimi kapat">×</button></div>}
 

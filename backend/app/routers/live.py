@@ -1,12 +1,12 @@
 """Live view streaming endpoint - proxy to go2rtc HLS streams."""
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import StreamingResponse, RedirectResponse
 import httpx
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 from ..db import query_camera
 from ..config import NVR_DB_PATH
-from ..auth import verify_token
+from ..auth import verify_token_query
 
 router = APIRouter()
 
@@ -14,9 +14,19 @@ router = APIRouter()
 GO2RTC_BASE_URL = "http://localhost:1984"
 
 
-@router.get("/live/{camera_slug}/stream.m3u8", dependencies=[Depends(verify_token)])
-async def get_live_stream(camera_slug: str):
-    """Proxy HLS master playlist from go2rtc."""
+@router.get("/live/{camera_slug}/stream.m3u8")
+async def get_live_stream(camera_slug: str, token: Optional[str] = Query(None)):
+    """Proxy HLS master playlist from go2rtc with token authentication."""
+    # Verify token from query parameter
+    if token:
+        from ..auth import verify_token_string
+        try:
+            verify_token_string(token)
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+    else:
+        raise HTTPException(status_code=401, detail="Token required")
+    
     # Verify camera exists
     cameras = []
     from ..db import query_cameras
