@@ -18,7 +18,7 @@ export default function CameraInfo({ camera }: CameraInfoProps) {
       }
       
       const activeDays = Object.keys(camera.schedule.days).filter(
-        day => camera.schedule.days![day].length > 0
+        day => camera.schedule!.days![day].length > 0
       )
       
       if (activeDays.length === 7) {
