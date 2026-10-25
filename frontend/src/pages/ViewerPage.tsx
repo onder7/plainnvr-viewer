@@ -8,6 +8,7 @@ import CameraList from '../components/CameraList'
 import CalendarPicker from '../components/CalendarPicker'
 import RecordingList from '../components/RecordingList'
 import VideoPlayer from '../components/VideoPlayer'
+import CameraInfo from '../components/CameraInfo'
 
 export default function ViewerPage() {
   const [cameras, setCameras] = useState<Camera[]>([])
@@ -58,6 +59,7 @@ export default function ViewerPage() {
       <section className="dashboard-grid">
         <aside className="panel camera-panel">
           <CameraList cameras={cameras} selectedCameraId={selectedCameraId} onSelectCamera={handleCameraSelect} isLoading={isLoading} />
+          {selectedCamera && <CameraInfo camera={selectedCamera} />}
         </aside>
 
         <section className="panel archive-panel">

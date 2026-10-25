@@ -1,5 +1,6 @@
 """SQLite database connection helper (read-only mode)."""
 import sqlite3
+import json
 from typing import List, Dict, Any
 from pathlib import Path
 from .cache import TTLCache
@@ -26,6 +27,14 @@ def get_db_connection(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
+def _parse_schedule(schedule_json: str) -> Dict[str, Any] | None:
+    """Parse schedule_json string to dict."""
+    try:
+        return json.loads(schedule_json) if schedule_json else None
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+
 def query_cameras(db_path: Path) -> List[Dict[str, Any]]:
     """Fetch all enabled cameras from the database.
     
@@ -33,7 +42,7 @@ def query_cameras(db_path: Path) -> List[Dict[str, Any]]:
         db_path: Path to nvr.sqlite3
         
     Returns:
-        List of camera dicts with keys: id, slug, name, rtsp_url, segment_seconds, enabled
+        List of camera dicts with keys: id, slug, name, rtsp_url, segment_seconds, enabled, retention_days, schedule, live_view_mode
     """
     cache_key = str(db_path)
     cached = _CAMERAS_CACHE.get(cache_key)
@@ -43,10 +52,15 @@ def query_cameras(db_path: Path) -> List[Dict[str, Any]]:
     conn = get_db_connection(db_path)
     try:
         cursor = conn.execute(
-            "SELECT id, slug, name, rtsp_url, segment_seconds, enabled "
+            "SELECT id, slug, name, rtsp_url, segment_seconds, enabled, retention_days, schedule_json, live_view_mode "
             "FROM cameras WHERE enabled = 1"
         )
-        return _CAMERAS_CACHE.set(cache_key, [dict(row) for row in cursor.fetchall()])
+        cameras = []
+        for row in cursor.fetchall():
+            camera = dict(row)
+            camera['schedule'] = _parse_schedule(camera.pop('schedule_json', None))
+            cameras.append(camera)
+        return _CAMERAS_CACHE.set(cache_key, cameras)
     finally:
         conn.close()
 
@@ -56,10 +70,14 @@ def query_camera(db_path: Path, camera_id: str) -> Dict[str, Any] | None:
     conn = get_db_connection(db_path)
     try:
         row = conn.execute(
-            "SELECT id, slug, name, rtsp_url, segment_seconds, enabled "
+            "SELECT id, slug, name, rtsp_url, segment_seconds, enabled, retention_days, schedule_json, live_view_mode "
             "FROM cameras WHERE id = ? AND enabled = 1",
             (camera_id,),
         ).fetchone()
-        return dict(row) if row else None
+        if row:
+            camera = dict(row)
+            camera['schedule'] = _parse_schedule(camera.pop('schedule_json', None))
+            return camera
+        return None
     finally:
         conn.close()

@@ -2,6 +2,18 @@
  * TypeScript types matching backend models
  */
 
+export interface ScheduleTimeRange {
+  start: string;
+  end: string;
+}
+
+export interface Schedule {
+  mode: 'always' | 'weekly';
+  days?: {
+    [day: string]: ScheduleTimeRange[];
+  };
+}
+
 export interface Camera {
   id: string;
   slug: string;
@@ -9,6 +21,9 @@ export interface Camera {
   rtsp_url: string;
   segment_seconds: number;
   enabled: number;
+  retention_days?: number;
+  schedule?: Schedule;
+  live_view_mode?: string;
 }
 
 export interface Recording {

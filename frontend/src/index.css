@@ -54,3 +54,36 @@ button { cursor: pointer; }
 @media (max-width: 560px) {
   .header-right { display: none; }
 }
+
+/* Navigation bar */
+.app-nav { position: sticky; top: 0; z-index: 100; display: flex; gap: 8px; padding: 12px 28px; background: linear-gradient(145deg, #0d1522, #0a1018); border-bottom: 1px solid #1d2a3b; box-shadow: 0 4px 20px #00000033; }
+.app-nav button { padding: 10px 20px; color: #8ea0b8; background: transparent; border: 1px solid #1f3046; border-radius: 8px; font-size: 13px; font-weight: 600; transition: all 0.2s ease; cursor: pointer; }
+.app-nav button:hover { color: #eef4fb; background: #1a2838; border-color: #2e4a5c; }
+.app-nav button.active { color: #0a1a20; background: #62dcb1; border-color: #62dcb1; box-shadow: 0 0 20px #62dcb133; }
+
+/* Live view specific */
+.live-view-grid { grid-template-columns: 320px minmax(0, 1fr); }
+.live-player { min-height: calc(100vh - 143px); }
+.live-video { width: 100%; max-height: 70vh; background: #050a11; }
+.stream-error { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 16px 24px; color: #f4c3c3; background: #3b1c27cc; border: 1px solid #713546; border-radius: 10px; font-size: 13px; backdrop-filter: blur(8px); }
+
+/* Camera info panel */
+.camera-info { margin-top: 20px; flex-direction: row; align-items: flex-start; gap: 12px; padding: 14px; background: #0e1925; border: 1px solid #253949; border-radius: 10px; border-top: 1px solid #253949; }
+.camera-info div { flex: 1; font-size: 11px; line-height: 1.6; }
+.camera-info b { color: #9db0c5; font-weight: 600; }
+
+@media (max-width: 1080px) {
+  .app-nav { padding-inline: 16px; }
+  .live-view-grid { grid-template-columns: 280px minmax(0, 1fr); }
+}
+
+@media (max-width: 820px) {
+  .live-view-grid { grid-template-columns: 1fr; }
+  .live-player { grid-row: 1; min-height: 500px; }
+  .camera-panel { grid-row: 2; }
+}
+
+@media (max-width: 560px) {
+  .app-nav { padding-inline: 10px; gap: 6px; }
+  .app-nav button { padding: 8px 14px; font-size: 12px; }
+}

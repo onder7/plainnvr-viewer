@@ -54,6 +54,15 @@ export function getVideoUrl(recordingId: string): string {
   return `${API_BASE}/video/${recordingId}?token=${encodeURIComponent(token ?? '')}`
 }
 
+export function getLiveStreamUrl(cameraSlug: string): string {
+  return `${API_BASE}/live/${cameraSlug}/stream.m3u8`
+}
+
+export function getSnapshotUrl(cameraSlug: string): string {
+  const token = getStoredToken()
+  return `${API_BASE}/live/${cameraSlug}/snapshot.jpg?token=${encodeURIComponent(token ?? '')}`
+}
+
 export async function getDiskUsage(): Promise<DiskUsage> {
   const response = await apiFetch(`${API_BASE}/system/disk`)
   if (!response.ok) throw new Error('Failed to fetch disk usage')

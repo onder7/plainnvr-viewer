@@ -10,7 +10,19 @@ sessions: id PK, username FK, created_at, last_seen_at, expires_at
 app_settings: key PK, value, updated_at
 """
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any, List
+
+
+class ScheduleTimeRange(BaseModel):
+    """A single time range in a schedule."""
+    start: str  # e.g. "07:00"
+    end: str    # e.g. "18:59"
+
+
+class Schedule(BaseModel):
+    """Camera recording schedule."""
+    mode: str  # "always" or "weekly"
+    days: Optional[Dict[str, List[ScheduleTimeRange]]] = None  # only for weekly mode
 
 
 class Camera(BaseModel):
@@ -21,6 +33,9 @@ class Camera(BaseModel):
     rtsp_url: str
     segment_seconds: int
     enabled: int
+    retention_days: Optional[int] = None
+    schedule: Optional[Schedule] = None
+    live_view_mode: Optional[str] = None
 
 
 class Recording(BaseModel):
