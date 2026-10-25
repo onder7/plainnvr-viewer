@@ -37,9 +37,6 @@ export default function LiveViewPage() {
           enableWorker: true,
           lowLatencyMode: true,
           backBufferLength: 10,
-          xhrSetup: (xhr, url) => {
-            // HLS.js will handle token in URL
-          },
         })
         
         hlsRef.current = hls
