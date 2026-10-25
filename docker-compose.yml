@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: plainnvr-viewer-backend
+    environment:
+      - NVR_VIDEO_ROOT=/mnt/DATA/nv1
+      - NVR_DB_PATH=/mnt/DATA/nv1/nvr.sqlite3
+    volumes:
+      - /mnt/DATA/nv1:/mnt/DATA/nv1:ro  # Read-only mount
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: plainnvr-viewer-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
