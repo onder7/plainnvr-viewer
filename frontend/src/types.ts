@@ -29,4 +29,5 @@ export interface DiskUsage {
 
 export interface RecordingDates {
   dates: string[];
+  days: number[];
 }
