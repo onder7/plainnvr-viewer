@@ -33,7 +33,7 @@ PlainNVR kayıtlarını tarih ve kameraya göre filtreleyip izletebileceğiniz, 
 ### 1. Depoyu klonlayın
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/onder7/plainnvr-viewer
 cd PlainNVR
 ```
 
