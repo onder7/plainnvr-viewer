@@ -1,7 +1,7 @@
 """Recordings listing endpoints."""
 from fastapi import APIRouter, Query
 from typing import List, Optional
-from datetime import date
+from datetime import date as date_class
 import base64
 
 from ..db import query_cameras
@@ -29,7 +29,7 @@ def list_recordings(
     target_date = None
     if date:
         try:
-            target_date = date.fromisoformat(date)
+            target_date = date_class.fromisoformat(date)
         except ValueError:
             return []
     
