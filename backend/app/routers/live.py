@@ -1,12 +1,11 @@
 """Live view streaming endpoint - proxy to go2rtc HLS streams."""
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse, RedirectResponse
 import httpx
 from typing import AsyncGenerator, Optional
 
 from ..db import query_camera
 from ..config import NVR_DB_PATH
-from ..auth import verify_token_query
 
 router = APIRouter()
 
