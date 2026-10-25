@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse, RedirectResponse
 import httpx
-from typing import AsyncGenerator, Optional
+from typing import Optional
 
 from ..db import query_camera
 from ..config import NVR_DB_PATH
@@ -40,25 +40,19 @@ async def get_live_stream(camera_slug: str, token: Optional[str] = Query(None)):
     return RedirectResponse(url=hls_url)
 
 
-@router.get("/live/{camera_slug}/channel/{channel}/hls/live/index.m3u8", dependencies=[Depends(verify_token)])
-async def get_live_stream_full(camera_slug: str, channel: int = 0):
-    """Alternative endpoint matching PlainNVR's go2rtc URL pattern."""
-    cameras = []
-    from ..db import query_cameras
-    cameras = query_cameras(NVR_DB_PATH)
-    
-    camera = next((c for c in cameras if c['slug'] == camera_slug), None)
-    if not camera:
-        raise HTTPException(status_code=404, detail="Camera not found")
-    
-    # Redirect to go2rtc HLS stream
-    hls_url = f"{GO2RTC_BASE_URL}/api/stream.m3u8?src={camera_slug}"
-    return RedirectResponse(url=hls_url)
-
-
-@router.get("/live/{camera_slug}/snapshot.jpg", dependencies=[Depends(verify_token)])
-async def get_snapshot(camera_slug: str):
+@router.get("/live/{camera_slug}/snapshot.jpg")
+async def get_snapshot(camera_slug: str, token: Optional[str] = Query(None)):
     """Get current camera snapshot from go2rtc."""
+    # Verify token from query parameter
+    if token:
+        from ..auth import verify_token_string
+        try:
+            verify_token_string(token)
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")
+    else:
+        raise HTTPException(status_code=401, detail="Token required")
+        
     cameras = []
     from ..db import query_cameras
     cameras = query_cameras(NVR_DB_PATH)
