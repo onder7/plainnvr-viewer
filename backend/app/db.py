@@ -14,7 +14,8 @@ def get_db_connection(db_path: Path) -> sqlite3.Connection:
         sqlite3.Connection in read-only mode
     """
     # URI mode with read-only flag prevents any writes
-    uri = f"file:{db_path}?mode=ro"
+    # Convert Path to string for sqlite3
+    uri = f"file:{str(db_path)}?mode=ro"
     conn = sqlite3.connect(uri, uri=True)
     conn.row_factory = sqlite3.Row  # Access columns by name
     return conn
