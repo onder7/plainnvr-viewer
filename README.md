@@ -78,6 +78,17 @@ Geliştirme sunucusu: `http://localhost:5173`
 - `NVR_VIDEO_ROOT`: PlainNVR veri kökü (varsayılan: `/mnt/DATA/nv1`)
 - `NVR_DB_PATH`: SQLite veritabanı yolu (varsayılan: `/mnt/DATA/nv1/nvr.sqlite3`)
 
+### Giriş ve oturum
+
+Viewer artık kullanıcı adı olmadan tek bir environment şifresiyle korunur. Proje kökünde `.env` dosyası oluşturup aşağıdaki değerleri değiştirin:
+
+```env
+VIEWER_PASSWORD=senin_sifreni
+JWT_SECRET=uzun-rastgele-bir-jwt-secret
+```
+
+Frontend giriş formu `/api/auth/login` endpointinden JWT alır ve tarayıcının `localStorage` alanında saklar. Kamera, takvim ve kayıt endpointleri Bearer token ister; HTML5 video oynatıcısının Range/seek desteğini korumak için video isteği tokenı URL query parametresi olarak taşır. Token süresi dolduğunda uygulama otomatik olarak login ekranına döner.
+
 ## Klasör Adlandırması
 
 PlainNVR'da klasör adlandırması tutarsızdır. Bu uygulama her kamera için 3 aday klasörü tarar:

@@ -1,8 +1,9 @@
 """PlainNVR Viewer - FastAPI Backend."""
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import cameras, recordings, video
+from .routers import auth, cameras, recordings, video
+from .auth import verify_token
 
 app = FastAPI(
     title="PlainNVR Viewer API",
@@ -23,9 +24,10 @@ app.add_middleware(
 app.include_router(cameras.router, prefix="/api", tags=["cameras"])
 app.include_router(recordings.router, prefix="/api", tags=["recordings"])
 app.include_router(video.router, prefix="/api", tags=["video"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 
-@app.get("/api/health")
+@app.get("/api/health", dependencies=[Depends(verify_token)])
 def health_check():
     """Health check endpoint."""
     return {"status": "ok"}

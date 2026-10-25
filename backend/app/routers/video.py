@@ -1,15 +1,16 @@
 """Video streaming endpoint with Range support."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path
 import base64
 
 from ..config import NVR_VIDEO_ROOT
+from ..auth import verify_video_token
 
 router = APIRouter()
 
 
-@router.get("/video/{recording_id}")
+@router.get("/video/{recording_id}", dependencies=[Depends(verify_video_token)])
 def stream_video(recording_id: str):
     """Stream a video file with HTTP Range support (for seeking).
     

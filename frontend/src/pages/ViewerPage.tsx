@@ -1,81 +1,92 @@
-/**
- * Main viewer page - 3-column layout
- */
-import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { getCameras, getRecordings } from '../api/client';
-import type { Camera, Recording } from '../types';
+import { useEffect, useMemo, useState } from 'react'
+import { format } from 'date-fns'
+import { getCameras, getRecordings } from '../api/client'
+import type { Camera, Recording } from '../types'
 
-import CameraList from '../components/CameraList';
-import CalendarPicker from '../components/CalendarPicker';
-import RecordingList from '../components/RecordingList';
-import VideoPlayer from '../components/VideoPlayer';
+import CameraList from '../components/CameraList'
+import CalendarPicker from '../components/CalendarPicker'
+import RecordingList from '../components/RecordingList'
+import VideoPlayer from '../components/VideoPlayer'
 
 export default function ViewerPage() {
-  const [cameras, setCameras] = useState<Camera[]>([]);
-  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [recordings, setRecordings] = useState<Recording[]>([]);
-  const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>(null);
+  const [cameras, setCameras] = useState<Camera[]>([])
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date())
+  const [recordings, setRecordings] = useState<Recording[]>([])
+  const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Load cameras on mount
   useEffect(() => {
     getCameras()
       .then((data) => {
-        setCameras(data);
-        if (data.length > 0) {
-          setSelectedCameraId(data[0].id);
-        }
+        setCameras(data)
+        if (data.length > 0) setSelectedCameraId(data[0].id)
       })
-      .catch((err) => console.error('Failed to load cameras:', err));
-  }, []);
+      .catch(() => setError('Kameralar yüklenemedi. Backend bağlantısını kontrol edin.'))
+      .finally(() => setIsLoading(false))
+  }, [])
 
-  // Load recordings when camera or date changes
   useEffect(() => {
-    if (!selectedCameraId) {
-      setRecordings([]);
-      return;
-    }
+    if (!selectedCameraId) return
 
-    const dateStr = format(selectedDate, 'yyyy-MM-dd');
-    getRecordings(selectedCameraId, dateStr)
-      .then((data) => {
-        setRecordings(data);
-        setSelectedRecordingId(null); // Clear selection when list changes
+    const controller = new AbortController()
+    getRecordings(selectedCameraId, format(selectedDate, 'yyyy-MM-dd'), controller.signal)
+      .then(setRecordings)
+      .catch((err: unknown) => {
+        if ((err as Error).name !== 'AbortError') setError('Kayıtlar yüklenemedi.')
       })
-      .catch((err) => console.error('Failed to load recordings:', err));
-  }, [selectedCameraId, selectedDate]);
+    return () => controller.abort()
+  }, [selectedCameraId, selectedDate])
+
+  const selectedCamera = useMemo(
+    () => cameras.find((camera) => camera.id === selectedCameraId) ?? null,
+    [cameras, selectedCameraId],
+  )
+  const selectedRecording = recordings.find((recording) => recording.id === selectedRecordingId) ?? null
+  const totalSize = recordings.reduce((sum, recording) => sum + recording.size, 0)
+  const handleCameraSelect = (cameraId: string) => { setSelectedRecordingId(null); setSelectedCameraId(cameraId) }
+  const handleDateSelect = (date: Date) => { setSelectedRecordingId(null); setSelectedDate(date) }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif' }}>
-      {/* Left column: Camera list */}
-      <div style={{ width: '250px', padding: '16px', borderRight: '1px solid #ddd', overflowY: 'auto' }}>
-        <CameraList
-          cameras={cameras}
-          selectedCameraId={selectedCameraId}
-          onSelectCamera={setSelectedCameraId}
-        />
-      </div>
-
-      {/* Middle column: Calendar + Recording list */}
-      <div style={{ width: '400px', padding: '16px', borderRight: '1px solid #ddd', overflowY: 'auto' }}>
-        <CalendarPicker
-          cameraId={selectedCameraId}
-          onSelectDate={setSelectedDate}
-        />
-        <div style={{ marginTop: '24px' }}>
-          <RecordingList
-            recordings={recordings}
-            selectedRecordingId={selectedRecordingId}
-            onSelectRecording={setSelectedRecordingId}
-          />
+    <main className="app-shell">
+      <header className="topbar">
+        <div className="brand-lockup">
+          <div className="brand-mark" aria-hidden="true">◈</div>
+          <div>
+            <p className="eyebrow">PLAINNVR / SECURE ARCHIVE</p>
+            <h1>Güvenlik Kayıt Merkezi</h1>
+          </div>
         </div>
-      </div>
+        <div className="system-status"><span className="status-dot" /> Salt okunur mod aktif</div>
+      </header>
 
-      {/* Right column: Video player */}
-      <div style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-        <VideoPlayer recordingId={selectedRecordingId} />
-      </div>
-    </div>
-  );
+      {error && <div className="notice error-notice" role="alert">{error}<button onClick={() => setError(null)} aria-label="Bildirimi kapat">×</button></div>}
+
+      <section className="dashboard-grid">
+        <aside className="panel camera-panel">
+          <CameraList cameras={cameras} selectedCameraId={selectedCameraId} onSelectCamera={handleCameraSelect} isLoading={isLoading} />
+        </aside>
+
+        <section className="panel archive-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">ARŞİV TAKVİMİ</p>
+              <h2>Gün seçin</h2>
+            </div>
+            <span className="date-chip">{format(selectedDate, 'dd MMM yyyy')}</span>
+          </div>
+          <CalendarPicker cameraId={selectedCameraId} onSelectDate={handleDateSelect} />
+          <div className="section-divider" />
+          <RecordingList recordings={recordings} selectedRecordingId={selectedRecordingId} onSelectRecording={setSelectedRecordingId} totalSize={totalSize} />
+        </section>
+
+        <section className="panel player-panel">
+          <VideoPlayer recordingId={selectedRecordingId} cameraName={selectedCamera?.name} recording={selectedRecording} />
+        </section>
+      </section>
+
+      <footer className="app-footer"><span>PlainNVR Viewer</span><span>Veri kaynağına yazma erişimi kapalıdır</span></footer>
+    </main>
+  )
 }

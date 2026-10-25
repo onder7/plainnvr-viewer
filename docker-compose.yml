@@ -7,6 +7,8 @@ services:
     environment:
       - NVR_VIDEO_ROOT=/mnt/DATA/nv1
       - NVR_DB_PATH=/mnt/DATA/nv1/nvr.sqlite3
+      - VIEWER_PASSWORD=${VIEWER_PASSWORD:-plainnvr}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production-please}
     volumes:
       - /mnt/DATA/nv1:/mnt/DATA/nv1:ro  # Read-only mount
     ports:

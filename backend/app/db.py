@@ -2,6 +2,10 @@
 import sqlite3
 from typing import List, Dict, Any
 from pathlib import Path
+from .cache import TTLCache
+
+
+_CAMERAS_CACHE: TTLCache[List[Dict[str, Any]]] = TTLCache(ttl_seconds=30)
 
 
 def get_db_connection(db_path: Path) -> sqlite3.Connection:
@@ -31,12 +35,31 @@ def query_cameras(db_path: Path) -> List[Dict[str, Any]]:
     Returns:
         List of camera dicts with keys: id, slug, name, rtsp_url, segment_seconds, enabled
     """
+    cache_key = str(db_path)
+    cached = _CAMERAS_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
     conn = get_db_connection(db_path)
     try:
         cursor = conn.execute(
             "SELECT id, slug, name, rtsp_url, segment_seconds, enabled "
             "FROM cameras WHERE enabled = 1"
         )
-        return [dict(row) for row in cursor.fetchall()]
+        return _CAMERAS_CACHE.set(cache_key, [dict(row) for row in cursor.fetchall()])
+    finally:
+        conn.close()
+
+
+def query_camera(db_path: Path, camera_id: str) -> Dict[str, Any] | None:
+    """Fetch one enabled camera without loading the complete camera list."""
+    conn = get_db_connection(db_path)
+    try:
+        row = conn.execute(
+            "SELECT id, slug, name, rtsp_url, segment_seconds, enabled "
+            "FROM cameras WHERE id = ? AND enabled = 1",
+            (camera_id,),
+        ).fetchone()
+        return dict(row) if row else None
     finally:
         conn.close()
