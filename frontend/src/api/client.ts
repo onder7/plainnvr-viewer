@@ -55,7 +55,8 @@ export function getVideoUrl(recordingId: string): string {
 }
 
 export function getLiveStreamUrl(cameraSlug: string): string {
-  return `${API_BASE}/live/${cameraSlug}/stream.m3u8`
+  const token = getStoredToken()
+  return `${API_BASE}/live/${cameraSlug}/stream.m3u8?token=${encodeURIComponent(token ?? '')}`
 }
 
 export function getSnapshotUrl(cameraSlug: string): string {

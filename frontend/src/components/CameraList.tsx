@@ -8,6 +8,42 @@ interface CameraListProps {
   isLoading?: boolean
 }
 
+const formatScheduleTooltip = (camera: Camera): string => {
+  if (!camera.schedule) return 'Kayıt zamanlaması: Bilgi yok'
+  
+  if (camera.schedule.mode === 'always') {
+    return 'Kayıt zamanlaması: 7/24 Sürekli Kayıt'
+  }
+  
+  if (camera.schedule.mode === 'weekly' && camera.schedule.days) {
+    const dayNames: { [key: string]: string } = {
+      mon: 'Pzt', tue: 'Sal', wed: 'Çar', thu: 'Per', fri: 'Cum', sat: 'Cmt', sun: 'Paz'
+    }
+    
+    const activeDays = Object.keys(camera.schedule.days).filter(
+      day => camera.schedule!.days![day].length > 0
+    )
+    
+    if (activeDays.length === 7) {
+      const firstDay = activeDays[0]
+      const times = camera.schedule.days[firstDay]
+      if (times.length > 0) {
+        return `Kayıt zamanlaması: Her gün ${times[0].start} - ${times[0].end}`
+      }
+    }
+    
+    const dayList = activeDays.map(d => dayNames[d] || d).join(', ')
+    const firstDay = activeDays[0]
+    const times = camera.schedule.days[firstDay]
+    if (times.length > 0) {
+      return `Kayıt zamanlaması: ${dayList} | ${times[0].start}-${times[0].end}`
+    }
+    return `Kayıt zamanlaması: ${dayList}`
+  }
+  
+  return 'Kayıt zamanlaması: Haftalık Program'
+}
+
 export default function CameraList({ cameras, selectedCameraId, onSelectCamera, isLoading }: CameraListProps) {
   const [query, setQuery] = useState('')
   const filteredCameras = useMemo(
@@ -31,7 +67,11 @@ export default function CameraList({ cameras, selectedCameraId, onSelectCamera, 
         <ul className="camera-items">
           {filteredCameras.map((camera) => (
             <li key={camera.id}>
-              <button className={`camera-item ${selectedCameraId === camera.id ? 'selected' : ''}`} onClick={() => onSelectCamera(camera.id)}>
+              <button 
+                className={`camera-item ${selectedCameraId === camera.id ? 'selected' : ''}`} 
+                onClick={() => onSelectCamera(camera.id)}
+                title={formatScheduleTooltip(camera)}
+              >
                 <span className="camera-icon" aria-hidden="true">▣</span>
                 <span className="camera-copy"><strong>{camera.name}</strong><small>{camera.slug}</small></span>
                 <span className="camera-state" aria-label={camera.enabled ? 'aktif' : 'pasif'}><i /></span>

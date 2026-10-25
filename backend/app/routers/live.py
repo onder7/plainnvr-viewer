@@ -26,7 +26,7 @@ async def get_live_stream(camera_slug: str):
     if not camera:
         raise HTTPException(status_code=404, detail="Camera not found")
     
-    # Redirect to go2rtc HLS stream
+    # Direct redirect to go2rtc HLS stream (no auth needed on go2rtc side)
     hls_url = f"{GO2RTC_BASE_URL}/api/stream.m3u8?src={camera_slug}"
     return RedirectResponse(url=hls_url)
 

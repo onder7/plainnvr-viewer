@@ -28,19 +28,23 @@ export default function LiveViewPage() {
     if (!selectedCameraSlug || !videoRef.current) return
 
     const video = videoRef.current
-    const streamUrl = `/api/live/${selectedCameraSlug}/stream.m3u8`
-    setStreamError(null)
+    import('../api/client').then(({ getLiveStreamUrl }) => {
+      const streamUrl = getLiveStreamUrl(selectedCameraSlug)
+      setStreamError(null)
 
-    if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 10,
-      })
-      
-      hlsRef.current = hls
-      hls.loadSource(streamUrl)
-      hls.attachMedia(video)
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 10,
+          xhrSetup: (xhr, url) => {
+            // HLS.js will handle token in URL
+          },
+        })
+        
+        hlsRef.current = hls
+        hls.loadSource(streamUrl)
+        hls.attachMedia(video)
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch((e) => console.warn('Autoplay blocked:', e))
@@ -85,6 +89,7 @@ export default function LiveViewPage() {
         videoRef.current.src = ''
       }
     }
+    })
   }, [selectedCameraSlug])
 
   const selectedCamera = cameras.find((c) => c.slug === selectedCameraSlug) ?? null
