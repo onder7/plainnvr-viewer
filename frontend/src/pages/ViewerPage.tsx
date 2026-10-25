@@ -3,6 +3,7 @@ import { format } from 'date-fns'
 import { getCameras, getRecordings } from '../api/client'
 import type { Camera, Recording } from '../types'
 
+import Header from '../components/Header'
 import CameraList from '../components/CameraList'
 import CalendarPicker from '../components/CalendarPicker'
 import RecordingList from '../components/RecordingList'
@@ -50,16 +51,7 @@ export default function ViewerPage() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <div className="brand-lockup">
-          <div className="brand-mark" aria-hidden="true">◈</div>
-          <div>
-            <p className="eyebrow">PLAINNVR / SECURE ARCHIVE</p>
-            <h1>Güvenlik Kayıt Merkezi</h1>
-          </div>
-        </div>
-        <div className="system-status"><span className="status-dot" /> Salt okunur mod aktif</div>
-      </header>
+      <Header />
 
       {error && <div className="notice error-notice" role="alert">{error}<button onClick={() => setError(null)} aria-label="Bildirimi kapat">×</button></div>}
 

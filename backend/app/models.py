@@ -31,3 +31,11 @@ class Recording(BaseModel):
     start: str  # ISO 8601
     end: Optional[str]  # ISO 8601 or None for last segment
     size: int
+
+
+class DiskUsage(BaseModel):
+    """Disk usage statistics."""
+    total: int  # bytes
+    used: int   # bytes
+    free: int   # bytes
+    percent: float  # percentage used

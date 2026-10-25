@@ -1,4 +1,4 @@
-import type { Camera, Recording, RecordingDates } from '../types'
+import type { Camera, Recording, RecordingDates, DiskUsage } from '../types'
 
 const API_BASE = '/api'
 const TOKEN_KEY = 'plainnvr_access_token'
@@ -52,4 +52,10 @@ export async function getRecordingDates(cameraId: string, year: number, month: n
 export function getVideoUrl(recordingId: string): string {
   const token = getStoredToken()
   return `${API_BASE}/video/${recordingId}?token=${encodeURIComponent(token ?? '')}`
+}
+
+export async function getDiskUsage(): Promise<DiskUsage> {
+  const response = await apiFetch(`${API_BASE}/system/disk`)
+  if (!response.ok) throw new Error('Failed to fetch disk usage')
+  return response.json()
 }

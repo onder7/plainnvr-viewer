@@ -2,7 +2,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import auth, cameras, recordings, video
+from .routers import auth, cameras, recordings, video, system
 from .auth import verify_token
 
 app = FastAPI(
@@ -25,6 +25,7 @@ app.include_router(cameras.router, prefix="/api", tags=["cameras"])
 app.include_router(recordings.router, prefix="/api", tags=["recordings"])
 app.include_router(video.router, prefix="/api", tags=["video"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(system.router, prefix="/api/system", tags=["system"])
 
 
 @app.get("/api/health", dependencies=[Depends(verify_token)])

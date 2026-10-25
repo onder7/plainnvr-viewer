@@ -20,6 +20,13 @@ export interface Recording {
   size: number;
 }
 
+export interface DiskUsage {
+  total: number;
+  used: number;
+  free: number;
+  percent: number;
+}
+
 export interface RecordingDates {
-  days: number[]; // Array of day numbers (1-31)
+  dates: string[];
 }
